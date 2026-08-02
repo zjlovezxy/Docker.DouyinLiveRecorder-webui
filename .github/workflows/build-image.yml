@@ -15,40 +15,22 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    # 2. 诊断步骤：检查 Secrets 变量是否成功加载
-    - name: Debug Secrets Existence
-      run: |
-        if [ -n "${{ secrets.DOCKER_USERNAME }}" ]; then
-          echo "✅ DOCKER_USERNAME 已成功读取！"
-        else
-          echo "❌ DOCKER_USERNAME 为空！请检查 Settings -> Secrets"
-        fi
-
-        if [ -n "${{ secrets.DOCKER_PASSWORD }}" ]; then
-          echo "✅ DOCKER_PASSWORD 已成功读取！"
-        else
-          echo "❌ DOCKER_PASSWORD 为空！请检查 Settings -> Secrets"
-        fi
-
-    # 3. 配置 QEMU 模拟器
+    # 2. 配置 QEMU 模拟器（用于跨架构构建 arm64）
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3
 
-    # 4. 配置 Docker Buildx
+    # 3. 配置 Docker Buildx
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
-    # 5. 登录 Docker Hub
+    # 4. 登录 Docker Hub（变量名已匹配你的 GitHub Secrets）
     - name: Log in to Docker Hub
       uses: docker/login-action@v3
-      env:
-        DOCKER_USER: ${{ secrets.DOCKER_USERNAME }}
-        DOCKER_PASS: ${{ secrets.DOCKER_PASSWORD }}
       with:
-        username: ${{ env.DOCKER_USER }}
-        password: ${{ env.DOCKER_PASS }}
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-    # 6. 构建并推送 Docker 镜像
+    # 5. 构建并推送 Docker 镜像
     - name: Build and push Docker image
       uses: docker/build-push-action@v6
       with:
@@ -57,7 +39,7 @@ jobs:
         push: true
         platforms: linux/amd64,linux/arm64
         tags: |
-          ihmily/douyin-live-recorder:${{ github.ref_name }}
-          ihmily/douyin-live-recorder:latest
+          zjlovezxy521/douyin-live-recorder:${{ github.ref_name }}
+          zjlovezxy521/douyin-live-recorder:latest
         cache-from: type=gha
         cache-to: type=gha,mode=max
